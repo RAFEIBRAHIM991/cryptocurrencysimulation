@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CryptoSim - Advanced Blockchain Simulation</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <script defer src="/static/script.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+  <div class="navbar">
+    <div class="navbar-left">
+      <h1><i class="fas fa-cube"></i> CryptoSim</h1>
+      <p class="subtitle">Advanced Blockchain Network Analysis</p>
+    </div>
+    <div class="navbar-right">
+      <div class="user-info">
+        <span class="user-balance">
+          <i class="fas fa-coins"></i> {{ "%.2f"|format(user.balance) }} COIN
+        </span>
+        <span class="user-name">
+          <i class="fas fa-user"></i> {{ user.username }}
+        </span>
+      </div>
+      <div class="user-actions">
+        <a href="{{ url_for('profile') }}" class="btn-profile">
+          <i class="fas fa-user-circle"></i> Profile
+        </a>
+        <a href="{{ url_for('logout') }}" class="btn-logout">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+      </div>
+    </div>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-messages">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">
+            <i class="fas fa-{% if category == 'success' %}check-circle{% elif category == 'error' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <ul class="nav-tabs">
+    <li class="tab-link active" data-tab="dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</li>
+    <li class="tab-link" data-tab="send"><i class="fas fa-paper-plane"></i> Send</li>
+    <li class="tab-link" data-tab="mine"><i class="fas fa-hammer"></i> Mine</li>
+    <li class="tab-link" data-tab="analytics"><i class="fas fa-chart-line"></i> Analytics</li>
+    <li class="tab-link" data-tab="parameters"><i class="fas fa-cogs"></i> Parameters</li>
+    <li class="tab-link" data-tab="mempool"><i class="fas fa-list"></i> Mempool</li>
+    <li class="tab-link" data-tab="decentralization"><i class="fas fa-network-wired"></i> Decentralization</li>
+    <li class="tab-link" data-tab="explorer"><i class="fas fa-search"></i> Explorer</li>
+    <li class="tab-link" data-tab="history"><i class="fas fa-history"></i> History</li>
+  </ul>
+
+  <div class="tab-content">
+    <!-- Dashboard Tab -->
+    <div id="dashboard" class="tab-pane active">
+      <h2><i class="fas fa-tachometer-alt"></i> Network Dashboard</h2>
+      <div class="dashboard-grid">
+        <div class="metric-card">
+          <h3>Network Status</h3>
+          <div id="networkStatus">Loading...</div>
+        </div>
+        <div class="metric-card">
+          <h3>Quick Stats</h3>
+          <div id="quickStats">Loading...</div>
+        </div>
+        <div class="metric-card">
+          <h3>Recent Activity</h3>
+          <div id="recentActivity">Loading...</div>
+        </div>
+        <div class="metric-card">
+          <h3>Network Health</h3>
+          <div id="networkHealth">Loading...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Send Tab -->
+    <div id="send" class="tab-pane">
+      <h2><i class="fas fa-paper-plane"></i> Send Cryptocurrency</h2>
+      <div class="form-container">
+        <form action="/send" method="POST" class="transaction-form">
+          <div class="form-group">
+            <label for="sender">From (Your Address)</label>
+            <input type="text" id="sender" name="sender" value="{{ user.username }}" readonly />
+            <small>You are sending from this address</small>
+          </div>
+          <div class="form-group">
+            <label for="recipient">To (Recipient Address)</label>
+            <input type="text" id="recipient" name="recipient" placeholder="e.g., bob, carol" required />
+            <small>Enter the username of the recipient</small>
+          </div>
+          <div class="form-group">
+            <label for="amount">Amount (COIN)</label>
+            <input type="number" id="amount" name="amount" placeholder="0.00" step="0.01" min="0" max="{{ user.balance }}" required />
+            <small>Your balance: {{ "%.2f"|format(user.balance) }} COIN</small>
+          </div>
+          <div class="form-group">
+            <label for="fee">Transaction Fee (COIN)</label>
+            <input type="number" id="fee" name="fee" placeholder="0.001" step="0.0001" min="0" />
+            <small>Leave empty for default fee</small>
+          </div>
+          <button type="submit" class="btn-primary">
+            <i class="fas fa-paper-plane"></i> Send Transaction
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Mine Tab -->
+    <div id="mine" class="tab-pane">
+      <h2><i class="fas fa-hammer"></i> Mine a Block</h2>
+      <div class="form-container">
+        <form action="/mine" method="POST" class="mining-form">
+          <div class="form-group">
+            <label for="miner">Miner Address</label>
+            <input type="text" id="miner" name="miner" value="{{ user.username }}" readonly />
+            <small>You will mine as {{ user.username }}</small>
+          </div>
+          <button type="submit" class="btn-primary">
+            <i class="fas fa-hammer"></i> Mine Block
+          </button>
+        </form>
+        <div class="mining-info">
+          <h3>Mining Information</h3>
+          <div id="miningInfo">Loading mining info...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Analytics Tab -->
+    <div id="analytics" class="tab-pane">
+      <h2><i class="fas fa-chart-line"></i> Network Analytics</h2>
+      <div class="analytics-grid">
+        <div class="analytics-card">
+          <h3>Network Parameters</h3>
+          <div id="networkParams">Loading...</div>
+        </div>
+        <div class="analytics-card">
+          <h3>Mining Statistics</h3>
+          <div id="miningStats">Loading...</div>
+        </div>
+        <div class="analytics-card">
+          <h3>Transaction Metrics</h3>
+          <div id="transactionMetrics">Loading...</div>
+        </div>
+        <div class="analytics-card">
+          <h3>Block Statistics</h3>
+          <div id="blockStats">Loading...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Parameters Tab -->
+    <div id="parameters" class="tab-pane">
+      <h2><i class="fas fa-cogs"></i> Network Parameters</h2>
+      <div class="parameters-container">
+        <form id="parameterForm" class="parameter-form">
+          <div class="parameter-group">
+            <label for="blockSizeLimit">Block Size Limit (bytes)</label>
+            <input type="number" id="blockSizeLimit" name="block_size_limit" min="1000" step="1000" />
+            <small>Maximum size of a block in bytes</small>
+          </div>
+          <div class="parameter-group">
+            <label for="miningDifficulty">Mining Difficulty</label>
+            <input type="number" id="miningDifficulty" name="mining_difficulty" min="1" max="10" />
+            <small>Number of leading zeros required in block hash</small>
+          </div>
+          <div class="parameter-group">
+            <label for="transactionFee">Default Transaction Fee (SIM)</label>
+            <input type="number" id="transactionFee" name="transaction_fee" min="0" step="0.0001" />
+            <small>Default fee for transactions</small>
+          </div>
+          <div class="parameter-group">
+            <label for="blockTimeTarget">Block Time Target (seconds)</label>
+            <input type="number" id="blockTimeTarget" name="block_time_target" min="1" max="60" />
+            <small>Target time between blocks</small>
+          </div>
+          <div class="parameter-group">
+            <label for="maxTxPerBlock">Max Transactions per Block</label>
+            <input type="number" id="maxTxPerBlock" name="max_transactions_per_block" min="1" max="10000" />
+            <small>Maximum number of transactions in a block</small>
+          </div>
+          <button type="submit" class="btn-primary">
+            <i class="fas fa-save"></i> Update Parameters
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Mempool Tab -->
+    <div id="mempool" class="tab-pane">
+      <h2><i class="fas fa-list"></i> Transaction Mempool</h2>
+      <div class="mempool-container">
+        <div class="mempool-header">
+          <h3>Pending Transactions</h3>
+          <button onclick="refreshMempool()" class="btn-secondary">
+            <i class="fas fa-sync-alt"></i> Refresh
+          </button>
+        </div>
+        <div id="mempoolList" class="mempool-list">Loading mempool...</div>
+      </div>
+    </div>
+
+    <!-- Decentralization Tab -->
+    <div id="decentralization" class="tab-pane">
+      <h2><i class="fas fa-network-wired"></i> Decentralization Analysis</h2>
+      <div class="decentralization-grid">
+        <div class="decentralization-card">
+          <h3>Decentralization Metrics</h3>
+          <div id="decentralizationMetrics">Loading...</div>
+        </div>
+        <div class="decentralization-card">
+          <h3>Miner Distribution</h3>
+          <div id="minerDistribution">Loading...</div>
+        </div>
+        <div class="decentralization-card">
+          <h3>Network Concentration</h3>
+          <div id="networkConcentration">Loading...</div>
+        </div>
+        <div class="decentralization-card">
+          <h3>Decentralization Score</h3>
+          <div id="decentralizationScore">Loading...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Explorer Tab -->
+    <div id="explorer" class="tab-pane">
+      <h2><i class="fas fa-search"></i> Blockchain Explorer</h2>
+      <div class="explorer-container">
+        <div class="explorer-header">
+          <h3>Blockchain Data</h3>
+          <button onclick="refreshBlockchain()" class="btn-secondary">
+            <i class="fas fa-sync-alt"></i> Refresh
+          </button>
+        </div>
+        <div id="blockchainView" class="blockchain-view">Loading blockchain...</div>
+      </div>
+    </div>
+
+    <!-- History Tab -->
+    <div id="history" class="tab-pane">
+      <h2><i class="fas fa-history"></i> Transaction History</h2>
+      <div class="history-container">
+        <div class="history-header">
+          <h3>All Transactions</h3>
+          <button onclick="refreshTransactions()" class="btn-secondary">
+            <i class="fas fa-sync-alt"></i> Refresh
+          </button>
+        </div>
+        <div id="transactionList" class="transaction-list">Loading transactions...</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p><i class="fas fa-cube"></i> CryptoSim © 2025 | Advanced Blockchain Network Simulation</p>
+  </footer>
+</body>
+</html>

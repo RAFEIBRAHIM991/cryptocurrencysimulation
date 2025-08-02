@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CryptoSim - Profile</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <i class="fas fa-user-circle"></i>
+                <h1>Profile</h1>
+                <p>Account Information & Transaction History</p>
+            </div>
+            
+            <div class="profile-info">
+                <div class="profile-section">
+                    <h3><i class="fas fa-user"></i> Account Details</h3>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <strong>Username:</strong> {{ user.username }}
+                        </div>
+                        <div class="info-item">
+                            <strong>Email:</strong> {{ user.email }}
+                        </div>
+                        <div class="info-item">
+                            <strong>Balance:</strong> {{ "%.2f"|format(user.balance) }} COIN
+                        </div>
+                        <div class="info-item">
+                            <strong>Member Since:</strong> {{ user.created_at.strftime('%B %d, %Y') }}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="profile-section">
+                    <h3><i class="fas fa-history"></i> Recent Transactions</h3>
+                    {% if transactions %}
+                        <div class="transaction-list">
+                            {% for tx in transactions %}
+                                <div class="transaction-item">
+                                    <div class="tx-header">
+                                        <span class="tx-id">{{ tx.txid[:8] }}...</span>
+                                        <span class="tx-date">{{ tx.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
+                                    </div>
+                                    <div class="tx-details">
+                                        {% if tx.sender_id == user.id %}
+                                            <span class="tx-type sent">
+                                                <i class="fas fa-arrow-up"></i> Sent
+                                            </span>
+                                            <span class="tx-amount">-{{ "%.3f"|format(tx.amount) }} COIN</span>
+                                        {% else %}
+                                            <span class="tx-type received">
+                                                <i class="fas fa-arrow-down"></i> Received
+                                            </span>
+                                            <span class="tx-amount">+{{ "%.3f"|format(tx.amount) }} COIN</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="tx-fee">
+                                        Fee: {{ "%.3f"|format(tx.fee) }} COIN
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="no-transactions">No transactions yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="auth-footer">
+                <a href="{{ url_for('index') }}" class="btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Dashboard
+                </a>
+                <a href="{{ url_for('logout') }}" class="btn-primary">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 
